@@ -1,12 +1,35 @@
 page {
+  /* ── 色彩：暖米底 + 单一陶土橙，层级靠留白与描边，不靠渐变堆叠 ── */
   --bg: #fff8f0;
-  --card: #ffffff;
-  --ink: #2f241c;
-  --ink-soft: #5f4d3f;
-  --muted: #9a8a7b;
-  --accent: #e86a33;
-  --accent-soft: #ffe7d8;
-  --line: #f0e2d4;
+  --surface: #ffffff;
+  --surface-2: #fbf5ee;
+  --ink: #2e2621;
+  --ink-2: #574a41;
+  --ink-3: #8b7c71;
+  --muted: #a99a8d;
+  --line: #efe3d7;
+  --line-soft: #f6eee5;
+  --accent: #c4562c;
+  --accent-deep: #9c3f1c;
+  --accent-soft: #f8e9df;
+  --accent-wash: #fdf4ee;
+  --success: #5c8f6c;
+
+  /* ── 圆角：三级，卡片统一 20rpx，大面板 24rpx ── */
+  --r-lg: 24rpx;
+  --r-md: 20rpx;
+  --r-sm: 14rpx;
+
+  /* ── 阴影：极低透明度小扩散，克制到几乎只剩一层浮起感 ── */
+  --shadow-1: 0 2rpx 8rpx rgba(74, 52, 38, 0.04);
+  --shadow-2: 0 8rpx 24rpx rgba(74, 52, 38, 0.06);
+
+  /* ── 动效：统一时长与缓动，只做一次性进入，不循环 ── */
+  --dur-fast: 120ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
   background: var(--bg);
   color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
@@ -28,3 +51,75 @@ swiper-item {
 image {
   display: block;
 }
+
+button::after {
+  border: none;
+}
+
+/* ── 页面淡入：只用 opacity，避免 transform 改变 fixed 元素的定位参照 ── */
+.page {
+  animation: pageIn 240ms ease both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shrinkOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* 进入浮现：配合内联 animation-delay 做轻错峰 */
+.reveal {
+  animation: fadeUp 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* 按下反馈：view 用 :active，button 用 hover-class="press-hover" */
+.press {
+  transition: transform var(--dur-fast) ease, opacity var(--dur-fast) ease;
+}
+
+.press:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.press-hover {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+

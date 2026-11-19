@@ -8,7 +8,7 @@
           <text class="brand__desc">把家常菜做成作品</text>
         </view>
       </view>
-      <view class="user-chip" bindtap="goUser">
+      <view class="user-chip press" hover-class="press-hover" bindtap="goUser">
         <image
           wx:if="{{user && user.avatar}}"
           class="user-chip__avatar"
@@ -25,12 +25,42 @@
       <text>本地模式 · 数据仅保存在这台设备</text>
     </view>
 
-    <view class="hero__title">今天，想做点什么？</view>
+    <view class="hero__search">
+      <view class="hero__search-icon"></view>
+      <input
+        class="hero__search-input"
+        type="text"
+        value="{{keyword}}"
+        placeholder="今天，想做点什么？"
+        placeholder-class="hero__search-placeholder"
+        confirm-type="search"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+      />
+      <view wx:if="{{keyword}}" class="hero__search-clear press" hover-class="press-hover" catchtap="clearSearch">×</view>
+    </view>
+
+    <scroll-view class="cat-bar" scroll-x enable-flex show-scrollbar="{{false}}">
+      <view class="cat-bar__inner">
+        <view
+          class="cat {{activeCategory === 'all' ? 'cat--active' : ''}}"
+          data-id="all"
+          bindtap="onCategoryTap"
+        >全部</view>
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="cat {{activeCategory === item.id ? 'cat--active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onCategoryTap"
+        >{{item.icon}} {{item.name}}</view>
+      </view>
+    </scroll-view>
 
     <view class="hero__stats">
       <view class="stat">
         <text class="stat__num">{{total}}</text>
-        <text class="stat__label">道菜谱</text>
+        <text class="stat__label">{{keyword ? '个结果' : (activeCategory === 'all' ? '道菜谱' : '道该分类')}}</text>
       </view>
       <view class="stat__divider"></view>
       <view class="stat">
@@ -48,14 +78,15 @@
   <view class="section">
     <view class="section__head">
       <text class="section__title">厨房里的作品</text>
-      <text class="section__hint">下拉刷新</text>
+      <text class="section__hint">{{keyword ? '找到 ' + total + ' 道' : (activeCategory === 'all' ? '下拉刷新' : '按分类筛选')}}</text>
     </view>
 
-    <view class="feed" wx:if="{{total > 0}}">
+    <view class="feed {{switching ? 'feed--switching' : ''}}" wx:if="{{total > 0}}">
       <view class="feed__col">
         <dish-card
           wx:for="{{leftColumn}}"
           wx:key="id"
+          style="animation-delay: {{item.delay}}ms"
           dish="{{item}}"
           height="{{item.cardHeight}}"
           bind:opendish="openDish"
@@ -65,6 +96,7 @@
         <dish-card
           wx:for="{{rightColumn}}"
           wx:key="id"
+          style="animation-delay: {{item.delay}}ms"
           dish="{{item}}"
           height="{{item.cardHeight}}"
           bind:opendish="openDish"
@@ -72,11 +104,33 @@
       </view>
     </view>
 
-    <view class="empty" wx:else>
-      <text class="empty__emoji">🍳</text>
-      <text class="empty__title">厨房还空着</text>
-      <text class="empty__desc">记录第一道亲手做的菜，让它留在这里</text>
-      <view class="empty__btn" bindtap="goCreate">去创建菜谱</view>
+    <view class="feed-loading" wx:elif="{{loading}}">
+      <view class="feed-loading__spinner"></view>
+      <text class="feed-loading__text">正在端上菜谱…</text>
+    </view>
+
+    <state-view
+      wx:elif="{{loadError}}"
+      icon="📡"
+      title="没能加载出来"
+      desc="{{loadError}}"
+      action="重试"
+      bind:action="reloadList"
+    />
+
+    <state-view
+      wx:else
+      icon="{{keyword ? '🔎' : (activeCategory === 'all' ? '🍳' : '🥢')}}"
+      title="{{keyword ? '没找到相关菜谱' : (activeCategory === 'all' ? '厨房还空着' : '这个分类还没有菜谱')}}"
+      desc="{{keyword ? '换个菜名试试，或者清空搜索' : (activeCategory === 'all' ? '记录第一道亲手做的菜，让它留在这里' : '换个分类看看，或来记录第一道')}}"
+      action="{{keyword ? '清空搜索' : (activeCategory === 'all' ? '去创建菜谱' : '查看全部分类')}}"
+      bind:action="onEmptyAction"
+    />
+
+    <view class="feed-foot" wx:if="{{total > 0}}">
+      <text wx:if="{{loadingMore}}" class="feed-foot__text">{{copy.loadingMore}}</text>
+      <text wx:elif="{{hasMore}}" class="feed-foot__text">{{copy.loadMore}}</text>
+      <text wx:else class="feed-foot__text feed-foot__text--end">{{copy.noMore}}</text>
     </view>
 
     <view class="footer">
@@ -84,7 +138,7 @@
     </view>
   </view>
 
-  <view class="fab" bindtap="goCreate">
+  <view class="fab press" hover-class="press-hover" bindtap="goCreate">
     <text class="fab__plus">＋</text>
     <text class="fab__text">记一道菜</text>
   </view>

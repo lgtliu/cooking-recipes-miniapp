@@ -2,7 +2,7 @@
   "description": "小杜里 · 家常菜谱记录小程序",
   "compileType": "miniprogram",
   "cloudfunctionRoot": "cloudfunctions/",
-  "libVersion": "3.5.5",
+  "libVersion": "3.18.0",
   "appid": "wx3a7261008c6ae2e0",
   "projectname": "小杜里",
   "setting": {
@@ -51,7 +51,20 @@
   },
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "seed"
+      },
+      {
+        "type": "folder",
+        "value": "seed-images"
+      },
+      {
+        "type": "folder",
+        "value": "seed-images-c"
+      }
+    ],
     "include": []
   },
   "isGameTourist": false

@@ -73,8 +73,8 @@ function call(name, data) {
       data: data || {},
       success: (res) => resolve(res && res.result),
       fail: (cause) => {
-        // 环境不存在、未部署、网络异常等，统一标记为云端不可用
-        available = false;
+        // 单次失败（网络抖动等）不再永久标记云端不可用，
+        // 全云端模式下错误直接抛给页面展示，下次调用照常重试
         console.warn(`[cloud] 云函数 ${name} 调用失败`, cause);
         reject(systemError((cause && cause.errMsg) || '云函数调用失败', cause));
       }

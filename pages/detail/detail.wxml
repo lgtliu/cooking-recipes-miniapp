@@ -43,7 +43,7 @@
   </view>
 
   <view class="sheet">
-    <view class="meta-card">
+    <view class="meta-card reveal" style="animation-delay: 40ms">
       <view class="meta">
         <text class="meta__value">{{dish.steps.length}}</text>
         <text class="meta__label">个步骤</text>
@@ -60,15 +60,42 @@
       </view>
     </view>
 
-    <text class="intro" wx:if="{{dish.intro}}">{{dish.intro}}</text>
+    <view class="category-row reveal" style="animation-delay: 90ms" wx:if="{{dish.categoryName}}">
+      <text class="category-row__tag">{{dish.categoryIcon}} {{dish.categoryName}}</text>
+      <text class="category-row__hint">所属分类</text>
+    </view>
 
-    <view class="steps-head">
+    <text class="intro reveal" style="animation-delay: 120ms" wx:if="{{dish.intro}}">{{dish.intro}}</text>
+
+    <view class="ingredients reveal" style="animation-delay: 150ms" wx:if="{{dish.ingredients.length}}">
+      <view class="steps-head">
+        <text class="steps-head__title">食材</text>
+        <text class="steps-head__hint">{{dish.ingredients.length}} 样，提前备好</text>
+      </view>
+      <view class="ing-list">
+        <view class="ing-item" wx:for="{{dish.ingredients}}" wx:key="key">
+          <text class="ing-item__name">{{item.name}}</text>
+          <view wx:if="{{item.amount}}" class="ing-item__leader"></view>
+          <text class="ing-item__amount" wx:if="{{item.amount}}">{{item.amount}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="family-share reveal" style="animation-delay: 190ms" wx:if="{{canShare}}">
+      <view class="family-share__body">
+        <text class="family-share__title">分享给家人</text>
+        <text class="family-share__desc">微信转发卡片，家人点开就能看到食材清单</text>
+      </view>
+      <button class="family-share__btn" open-type="share" hover-class="press-hover">分享</button>
+    </view>
+
+    <view class="steps-head reveal" style="animation-delay: 220ms">
       <text class="steps-head__title">做法步骤</text>
       <text class="steps-head__hint">跟着做，不会翻车</text>
     </view>
 
     <view class="steps">
-      <view class="step" wx:for="{{dish.steps}}" wx:key="no">
+      <view class="step reveal" style="animation-delay: {{120 + index * 35}}ms" wx:for="{{dish.steps}}" wx:key="no">
         <view class="step__rail">
           <view class="step__no">{{item.no}}</view>
           <view class="step__line" wx:if="{{index !== dish.steps.length - 1}}"></view>
@@ -87,24 +114,33 @@
       </view>
     </view>
 
-    <view class="footer" wx:if="{{canManage}}">
+    <view class="footer reveal" style="animation-delay: 300ms" wx:if="{{canManage}}">
       <text class="footer__slogan">这是你记录的菜谱</text>
       <view class="owner-actions">
-        <view class="owner-btn" bindtap="editDish">编辑菜谱</view>
-        <view class="owner-btn owner-btn--danger" bindtap="deleteDish">删除</view>
+        <view class="owner-btn press" hover-class="press-hover" bindtap="editDish">编辑菜谱</view>
+        <view class="owner-btn owner-btn--danger press" hover-class="press-hover" bindtap="deleteDish">删除</view>
       </view>
     </view>
 
-    <view class="footer" wx:else>
+    <view class="footer reveal" style="animation-delay: 300ms" wx:else>
       <text class="footer__slogan">每一道家常菜，都值得被记录</text>
-      <view class="footer__btn" bindtap="goCreate">记录我的版本</view>
+      <view class="footer__btn press" hover-class="press-hover" bindtap="goCreate">记录我的版本</view>
     </view>
   </view>
 </view>
 
-<view class="missing" wx:else>
-  <text class="missing__emoji">🥣</text>
+<view class="missing" wx:elif="{{!loading}}">
+  <view class="missing__icon">🥣</view>
   <text class="missing__title">这道菜找不到了</text>
   <text class="missing__desc">它可能已经被删除，回首页看看别的菜吧</text>
-  <view class="missing__btn" bindtap="goHome">返回首页</view>
+  <text class="missing__reason" wx:if="{{failReason}}">{{failReason}}</text>
+  <view class="missing__actions">
+    <view class="missing__btn missing__btn--ghost press" hover-class="press-hover" bindtap="reloadDish">重试</view>
+    <view class="missing__btn press" hover-class="press-hover" bindtap="goHome">返回首页</view>
+  </view>
+</view>
+
+<view class="loading" wx:else>
+  <view class="loading__spinner"></view>
+  <text class="loading__text">正在端上这道菜…</text>
 </view>

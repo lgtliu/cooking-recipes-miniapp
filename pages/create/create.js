@@ -1,8 +1,10 @@
 const store = require('../../utils/store');
 const imageUtil = require('../../utils/image');
+const catUtil = require('../../utils/categories');
+const { MAX_PHOTOS, MAX_INGREDIENTS, REMOVE_ANIMATION_DELAY } = require('../../config/constants');
 
-const MAX_PHOTOS = 9;
 let stepSeed = 0;
+let ingredientSeed = 0;
 
 function createStep(text, image) {
   stepSeed += 1;
@@ -13,6 +15,15 @@ function createStep(text, image) {
   };
 }
 
+function createIngredient(name, amount) {
+  ingredientSeed += 1;
+  return {
+    key: `ing_${Date.now()}_${ingredientSeed}`,
+    name: name || '',
+    amount: amount || ''
+  };
+}
+
 Page({
   data: {
     isEdit: false,
@@ -20,11 +31,16 @@ Page({
     name: '',
     intro: '',
     photos: [],
+    ingredients: [createIngredient()],
     steps: [createStep()],
-    submitting: false
+    submitting: false,
+    categories: [],
+    categoryId: 'home',
+    removing: { photo: -1, step: -1 }
   },
 
   onLoad(options) {
+    this.loadCategories();
     if (options && options.id) {
       this.enterEditMode(options.id);
       return;
@@ -34,6 +50,15 @@ Page({
     if (!store.isLoggedIn()) {
       wx.redirectTo({ url: '/pages/login/login?redirect=create' });
     }
+  },
+
+  async loadCategories() {
+    const list = await store.listCategories();
+    const fallbackId = list.length ? list[0].id : '';
+    // 仅在尚未选定分类时设置默认值，避免覆盖编辑模式回填的选择
+    const patch = { categories: list };
+    if (!this.data.categoryId) patch.categoryId = fallbackId;
+    this.setData(patch);
   },
 
   async enterEditMode(id) {
@@ -59,13 +84,29 @@ Page({
     const sourceSteps = dish.steps.length ? dish.steps : [{ text: '', image: '' }];
     const steps = sourceSteps.map((step) => createStep(step.text, step.image));
 
+    const sourceIngredients =
+      dish.ingredients && dish.ingredients.length
+        ? dish.ingredients
+        : [{ name: '', amount: '' }];
+    const ingredients = sourceIngredients.map((item) =>
+      createIngredient(item.name, item.amount)
+    );
+
     this.setData({
       isEdit: true,
       dishId: dish.id,
       name: dish.name,
       intro: dish.intro,
       photos: dish.images.slice(),
-      steps
+      ingredients,
+      steps,
+      // 老菜谱没有分类时默认选第一个，保证编辑后能写入合法分类
+      categoryId:
+        dish.categoryId && this.isValidCategory(dish.categoryId)
+          ? dish.categoryId
+          : this.data.categories.length
+            ? this.data.categories[0].id
+            : catUtil.FALLBACK_CATEGORIES[0].id
     });
 
     wx.setNavigationBarTitle({ title: '编辑菜谱' });
@@ -85,6 +126,15 @@ Page({
 
   onIntroInput(event) {
     this.setData({ intro: event.detail.value });
+  },
+
+  isValidCategory(id) {
+    return catUtil.isValidCategoryId(id, this.data.categories);
+  },
+
+  onCategoryTap(event) {
+    const id = event.currentTarget.dataset.id || '';
+    this.setData({ categoryId: id });
   },
 
   choosePhotos() {
@@ -116,9 +166,11 @@ Page({
 
   removePhoto(event) {
     const index = Number(event.currentTarget.dataset.index);
-    const photos = this.data.photos.slice();
-    photos.splice(index, 1);
-    this.setData({ photos });
+    this.animateRemove('photo', index, () => {
+      const photos = this.data.photos.slice();
+      photos.splice(index, 1);
+      this.setData({ photos });
+    });
   },
 
   setCover(event) {
@@ -131,6 +183,34 @@ Page({
     this.toast('已设为封面');
   },
 
+  addIngredient() {
+    if (this.data.ingredients.length >= MAX_INGREDIENTS) {
+      this.toast(`食材最多 ${MAX_INGREDIENTS} 条`);
+      return;
+    }
+    this.setData({ ingredients: this.data.ingredients.concat(createIngredient()) });
+  },
+
+  removeIngredient(event) {
+    if (this.data.ingredients.length <= 1) {
+      this.setData({ ingredients: [createIngredient()] });
+      return;
+    }
+    const index = Number(event.currentTarget.dataset.index);
+    const ingredients = this.data.ingredients.slice();
+    ingredients.splice(index, 1);
+    this.setData({ ingredients });
+  },
+
+  onIngredientInput(event) {
+    const index = Number(event.currentTarget.dataset.index);
+    const field = event.currentTarget.dataset.field;
+    if (field !== 'name' && field !== 'amount') return;
+    this.setData({
+      [`ingredients[${index}].${field}`]: event.detail.value
+    });
+  },
+
   addStep() {
     this.setData({ steps: this.data.steps.concat(createStep()) });
   },
@@ -138,9 +218,23 @@ Page({
   removeStep(event) {
     if (this.data.steps.length <= 1) return;
     const index = Number(event.currentTarget.dataset.index);
-    const steps = this.data.steps.slice();
-    steps.splice(index, 1);
-    this.setData({ steps });
+    this.animateRemove('step', index, () => {
+      const steps = this.data.steps.slice();
+      steps.splice(index, 1);
+      this.setData({ steps });
+    });
+  },
+
+  /** 先给待删项加收缩动画，150ms 后再真正删数据 */
+  animateRemove(kind, index, done) {
+    if (this.removing) return;
+    this.removing = true;
+    this.setData({ [`removing.${kind}`]: index });
+    setTimeout(() => {
+      this.setData({ [`removing.${kind}`]: -1 });
+      this.removing = false;
+      done();
+    }, REMOVE_ANIMATION_DELAY);
   },
 
   onStepInput(event) {
@@ -188,6 +282,11 @@ Page({
     const name = this.data.name.trim();
     const intro = this.data.intro.trim();
     const photos = this.data.photos.slice();
+    const rawIngredients = this.data.ingredients.map((item) => ({
+      name: (item.name || '').trim(),
+      amount: (item.amount || '').trim()
+    }));
+    const ingredients = rawIngredients.filter((item) => item.name);
     const steps = this.data.steps
       .map((step) => ({ text: step.text.trim(), image: step.image }))
       .filter((step) => step.text);
@@ -196,12 +295,26 @@ Page({
       this.toast('先给这道菜起个名字');
       return;
     }
+    if (rawIngredients.some((item) => item.amount && !item.name)) {
+      this.toast('填写用量时请同时写食材名');
+      return;
+    }
+    if (ingredients.length > MAX_INGREDIENTS) {
+      this.toast(`食材最多 ${MAX_INGREDIENTS} 条`);
+      return;
+    }
     if (!photos.length) {
       this.toast('至少上传一张成品图');
       return;
     }
     if (!steps.length) {
       this.toast('至少写一个做法步骤');
+      return;
+    }
+
+    const categoryId = this.data.categoryId;
+    if (!categoryId || !this.isValidCategory(categoryId)) {
+      this.toast('请选择一个分类');
       return;
     }
 
@@ -218,6 +331,8 @@ Page({
       const payload = {
         name,
         intro,
+        categoryId,
+        ingredients,
         images: savedPhotos,
         steps: steps.map((step, index) => ({
           text: step.text,

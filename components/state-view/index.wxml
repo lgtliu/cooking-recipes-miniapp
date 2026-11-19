@@ -1,0 +1,12 @@
+<view class="state">
+  <view class="state__icon">{{icon}}</view>
+  <text class="state__title">{{title}}</text>
+  <text class="state__desc" wx:if="{{desc}}">{{desc}}</text>
+  <view
+    wx:if="{{action}}"
+    class="state__btn"
+    hover-class="state__btn--hover"
+    hover-stay-time="80"
+    bindtap="onAction"
+  >{{action}}</view>
+</view>

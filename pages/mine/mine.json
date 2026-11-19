@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "state-view": "/components/state-view/index"
+  },
   "navigationBarTitleText": "我的菜谱"
 }

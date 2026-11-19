@@ -11,22 +11,31 @@
     </view>
   </view>
 
-  <view class="profile profile--guest" wx:else>
+  <view class="profile" wx:else>
     <view class="profile__avatar profile__avatar--empty">👤</view>
     <view class="profile__info">
       <text class="profile__name">游客</text>
       <text class="profile__desc">登录后可以发布和管理自己的菜谱</text>
     </view>
-    <view class="profile__action" bindtap="goLogin">去登录</view>
+    <view class="profile__action press" hover-class="press-hover" bindtap="goLogin">去登录</view>
   </view>
 
   <block wx:if="{{user}}">
+    <view class="family-entry press" hover-class="press-hover" bindtap="goFamily">
+      <view class="family-entry__icon">👨‍👩‍👧</view>
+      <view class="family-entry__body">
+        <text class="family-entry__title">我的家人</text>
+        <text class="family-entry__desc">创建家庭、邀请家人，把菜谱食材清单分享给他们</text>
+      </view>
+      <text class="family-entry__arrow">›</text>
+    </view>
+
     <view class="migrate" wx:if="{{migration.canMigrate}}">
       <view class="migrate__body">
         <text class="migrate__title">本机还有 {{migration.count}} 道菜谱</text>
         <text class="migrate__desc">可一次性迁移到云端，归到当前微信账号</text>
       </view>
-      <view class="migrate__btn" bindtap="migrate">{{migrating ? '迁移中…' : '迁移'}}</view>
+      <view class="migrate__btn press" hover-class="press-hover" bindtap="migrate">{{migrating ? '迁移中…' : '迁移'}}</view>
     </view>
 
     <view class="section__head">
@@ -45,7 +54,10 @@
         <image wx:if="{{item.cover}}" class="item__cover" src="{{item.cover}}" mode="aspectFill" />
         <view wx:else class="item__cover item__cover--empty">🍲</view>
         <view class="item__body">
-          <text class="item__name">{{item.name}}</text>
+          <view class="item__title-row">
+            <text class="item__name">{{item.name}}</text>
+            <text wx:if="{{item.categoryName}}" class="item__cat">{{item.categoryIcon}} {{item.categoryName}}</text>
+          </view>
           <text class="item__intro">{{item.intro || '还没有写简介'}}</text>
           <text class="item__meta">{{item.steps.length}} 个步骤 · {{item.timeText}}</text>
         </view>
@@ -53,14 +65,30 @@
       </view>
     </view>
 
-    <view class="empty" wx:else>
-      <text class="empty__emoji">🍳</text>
-      <text class="empty__title">还没有发布过菜谱</text>
-      <text class="empty__desc">把拿手菜记录下来，只有你能编辑和删除</text>
-      <view class="empty__btn" bindtap="goCreate">去记录一道菜</view>
+    <view class="mine-loading" wx:elif="{{loading}}">
+      <view class="mine-loading__spinner"></view>
+      <text class="mine-loading__text">{{copy.loading}}</text>
     </view>
 
-    <view class="logout" bindtap="logout">退出登录</view>
+    <state-view
+      wx:elif="{{loadError}}"
+      icon="📡"
+      title="没能加载出来"
+      desc="{{loadError}}"
+      action="重试"
+      bind:action="reloadList"
+    />
+
+    <state-view
+      wx:else
+      icon="🍳"
+      title="还没有发布过菜谱"
+      desc="把拿手菜记录下来，只有你能编辑和删除"
+      action="去记录一道菜"
+      bind:action="goCreate"
+    />
+
+    <view class="logout press" hover-class="press-hover" bindtap="logout">退出登录</view>
   </block>
 
   <view class="guest-tip" wx:else>

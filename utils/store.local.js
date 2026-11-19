@@ -5,10 +5,25 @@
  */
 
 const session = require('./session');
+const catUtil = require('./categories');
 
 const STORAGE_KEY = 'cooking_recipes_v1';
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
+const MAX_INGREDIENTS = 30;
+const MAX_INGREDIENT_TEXT = 20;
+
+/** 食材清洗：去空行、去首尾空格、限制条数与文本长度，旧数据缺字段时返回空数组 */
+function normalizeIngredients(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .map((item) => ({
+      name: String((item && item.name) || '').trim().slice(0, MAX_INGREDIENT_TEXT),
+      amount: String((item && item.amount) || '').trim().slice(0, MAX_INGREDIENT_TEXT)
+    }))
+    .filter((item) => item.name)
+    .slice(0, MAX_INGREDIENTS);
+}
 
 function buildSeedDishes() {
   const now = Date.now();
@@ -22,6 +37,14 @@ function buildSeedDishes() {
       images: [
         '/assets/img/dish-tomato-egg.jpg',
         '/assets/img/dish-tomato-egg-2.jpg'
+      ],
+      ingredients: [
+        { name: '番茄', amount: '2 个' },
+        { name: '鸡蛋', amount: '3 个' },
+        { name: '小葱', amount: '1 根' },
+        { name: '白糖', amount: '半勺' },
+        { name: '盐', amount: '适量' },
+        { name: '食用油', amount: '2 勺' }
       ],
       steps: [
         {
@@ -42,6 +65,7 @@ function buildSeedDishes() {
         }
       ],
       author: '小杜里',
+      categoryId: 'home',
       createdAt: now - 2 * HOUR
     },
     {
@@ -52,6 +76,17 @@ function buildSeedDishes() {
       images: [
         '/assets/img/dish-braised-pork.jpg',
         '/assets/img/dish-braised-pork-2.jpg'
+      ],
+      ingredients: [
+        { name: '五花肉', amount: '500g' },
+        { name: '冰糖', amount: '30g' },
+        { name: '姜', amount: '4 片' },
+        { name: '八角', amount: '2 颗' },
+        { name: '桂皮', amount: '1 小段' },
+        { name: '干辣椒', amount: '2 个' },
+        { name: '生抽', amount: '2 勺' },
+        { name: '老抽', amount: '1 勺' },
+        { name: '料酒', amount: '1 勺' }
       ],
       steps: [
         {
@@ -76,6 +111,7 @@ function buildSeedDishes() {
         }
       ],
       author: '小杜里',
+      categoryId: 'meat',
       createdAt: now - 27 * HOUR
     },
     {
@@ -84,6 +120,14 @@ function buildSeedDishes() {
       intro: '清爽脆嫩、蒜香十足，配重口味的硬菜最解腻。',
       cover: '/assets/img/dish-greens.jpg',
       images: ['/assets/img/dish-greens.jpg'],
+      ingredients: [
+        { name: '西兰花', amount: '1 颗' },
+        { name: '大蒜', amount: '5 瓣' },
+        { name: '蚝油', amount: '1 勺' },
+        { name: '盐', amount: '适量' },
+        { name: '食用油', amount: '1 勺' },
+        { name: '水淀粉', amount: '少许' }
+      ],
       steps: [
         {
           text: '西兰花掰成小朵，用淡盐水泡 10 分钟后冲洗干净；蒜切成末。',
@@ -103,6 +147,7 @@ function buildSeedDishes() {
         }
       ],
       author: '小杜里',
+      categoryId: 'veggie',
       createdAt: now - 3 * DAY
     },
     {
@@ -111,6 +156,14 @@ function buildSeedDishes() {
       intro: '一把小葱慢慢熬出香气，简单却让人念念不忘。',
       cover: '/assets/img/dish-noodle.jpg',
       images: ['/assets/img/dish-noodle.jpg'],
+      ingredients: [
+        { name: '小葱', amount: '100g' },
+        { name: '面条', amount: '200g' },
+        { name: '生抽', amount: '3 勺' },
+        { name: '老抽', amount: '1 勺' },
+        { name: '白糖', amount: '1 勺' },
+        { name: '食用油', amount: '100ml' }
+      ],
       steps: [
         {
           text: '小葱洗净沥干，切成长段；生抽、老抽、白糖提前调成料汁。',
@@ -130,6 +183,7 @@ function buildSeedDishes() {
         }
       ],
       author: '小杜里',
+      categoryId: 'staple',
       createdAt: now - 5 * DAY
     }
   ];
@@ -180,6 +234,9 @@ function normalizeDish(raw) {
       author: '匿名厨友',
       authorId: '',
       authorAvatar: '',
+      categoryId: '',
+      categoryName: '',
+      categoryIcon: '',
       createdAt: 0,
       updatedAt: 0
     },
@@ -188,10 +245,18 @@ function normalizeDish(raw) {
       intro: dish.intro || '',
       cover: images[0] || dish.cover || '',
       images,
-      steps,
+      steps: steps,
       author: dish.author || '匿名厨友',
       authorId: dish.authorId || '',
-      authorAvatar: dish.authorAvatar || ''
+      authorAvatar: dish.authorAvatar || '',
+      ingredients: normalizeIngredients(dish.ingredients),
+      // 老数据缺 categoryId 时归入「未分类」；展示字段始终按字典重算
+      categoryId:
+        typeof dish.categoryId === 'string' && dish.categoryId.trim()
+          ? dish.categoryId.trim()
+          : '',
+      categoryName: catUtil.categoryName(dish.categoryId),
+      categoryIcon: catUtil.categoryIcon(dish.categoryId)
     }
   );
 }
@@ -201,7 +266,21 @@ function init() {
   const data = wx.getStorageSync(STORAGE_KEY);
   if (!Array.isArray(data) || data.length === 0) {
     writeAll(buildSeedDishes());
+    return;
   }
+
+  // 旧版本写入的示例菜谱没有食材：按 id 补一次，用户自己发布的菜谱不受影响
+  const seeds = buildSeedDishes();
+  let changed = false;
+  const next = data.map((dish) => {
+    if (!dish || !dish.id) return dish;
+    const seed = seeds.filter((item) => item.id === dish.id)[0];
+    if (!seed) return dish;
+    if (Array.isArray(dish.ingredients) && dish.ingredients.length) return dish;
+    changed = true;
+    return Object.assign({}, dish, { ingredients: seed.ingredients });
+  });
+  if (changed) writeAll(next);
 }
 
 function listDishes() {
@@ -237,12 +316,25 @@ function normalizeDraft(draft) {
         .filter((step) => step.text)
     : [];
 
+  const categoryId =
+    draft && typeof draft.categoryId === 'string' ? draft.categoryId.trim() : '';
+  if (!catUtil.isValidCategoryId(categoryId)) {
+    throw new Error('分类无效，请重新选择');
+  }
+
   return {
     name,
     intro: ((draft && draft.intro) || '').trim(),
+    ingredients: normalizeIngredients(draft && draft.ingredients),
     images,
-    steps
+    steps,
+    categoryId
   };
+}
+
+/** 本地模式分类字典：直接用兜底常量，保持与云端接口一致（返回 Promise）。 */
+function listCategories() {
+  return Promise.resolve(catUtil.normalizeCategoryList(null));
 }
 
 function requireUser() {
@@ -303,10 +395,12 @@ function createDish(draft) {
     intro: data.intro,
     cover: data.images[0] || '',
     images: data.images,
+    ingredients: data.ingredients,
     steps: data.steps,
     author: user.nickname,
     authorId: user.id,
     authorAvatar: user.avatar,
+    categoryId: data.categoryId,
     createdAt: Date.now(),
     updatedAt: Date.now()
   };
@@ -337,7 +431,9 @@ function updateDish(id, draft) {
     intro: data.intro,
     cover: data.images[0] || '',
     images: data.images,
+    ingredients: data.ingredients,
     steps: data.steps,
+    categoryId: data.categoryId,
     updatedAt: Date.now()
   });
 
@@ -368,6 +464,7 @@ function removeDish(id) {
 module.exports = {
   STORAGE_KEY,
   init,
+  listCategories,
   listDishes,
   getDish,
   getMyDishes,

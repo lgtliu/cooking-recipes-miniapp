@@ -1,6 +1,9 @@
 const store = require('../../utils/store');
 const format = require('../../utils/format');
 const auth = require('../../utils/auth');
+const errors = require('../../utils/errors');
+const logger = require('../../utils/logger');
+const { COPY } = require('../../config/constants');
 
 Page({
   data: {
@@ -9,7 +12,10 @@ Page({
     total: 0,
     mode: 'local',
     migration: { canMigrate: false, count: 0 },
-    migrating: false
+    migrating: false,
+    loading: true,
+    loadError: '',
+    copy: COPY
   },
 
   onShow() {
@@ -26,10 +32,14 @@ Page({
         dishes: [],
         total: 0,
         mode,
+        loading: false,
+        loadError: '',
         migration: { canMigrate: false, count: 0 }
       });
       return;
     }
+
+    this.setData({ user, mode, loading: true, loadError: '' });
 
     try {
       const dishes = (await store.getMyDishes()).map((dish) =>
@@ -39,17 +49,22 @@ Page({
       );
 
       this.setData({
-        user,
         dishes,
         total: dishes.length,
-        mode: store.getMode(),
+        loading: false,
         migration: store.getMigrationInfo()
       });
     } catch (err) {
-      console.error('[mine] 加载我的菜谱失败', err);
-      this.setData({ user, mode: store.getMode() });
-      wx.showToast({ title: '加载失败，请稍后重试', icon: 'none' });
+      logger.error('mine', '加载我的菜谱失败', err && err.code);
+      this.setData({
+        loading: false,
+        loadError: errors.toUserMessage(err, COPY.loadFailed)
+      });
     }
+  },
+
+  reloadList() {
+    this.refresh();
   },
 
   goLogin() {
@@ -58,6 +73,10 @@ Page({
 
   goCreate() {
     auth.openCreate();
+  },
+
+  goFamily() {
+    wx.navigateTo({ url: '/pages/family/family' });
   },
 
   openDish(event) {
@@ -110,11 +129,11 @@ Page({
       });
       this.refresh();
     } catch (err) {
-      console.error('[mine] 迁移失败', err);
+      logger.error('mine', '迁移失败', err && err.code);
       wx.hideLoading();
       this.setData({ migrating: false });
       wx.showToast({
-        title: (err && err.message) || '迁移失败，请重试',
+        title: errors.toUserMessage(err, '迁移失败，请重试'),
         icon: 'none'
       });
     }

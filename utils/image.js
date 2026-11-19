@@ -1,11 +1,12 @@
 /**
  * 图片处理：
- * - 云端模式：上传到云存储，返回 cloud:// 的 fileID；
- * - 本地模式：chooseMedia 返回的是临时路径，重启后会失效，
- *   所以复制到用户目录再存起来。
+ * - 云端可用：把临时图片上传到云存储，返回 fileID（cloud://...），页面可直接展示；
+ * - 云端不可用：chooseMedia 返回的是临时路径，重启后会失效，
+ *   所以复制到用户目录再存起来作为兜底。
  */
 
 const cloud = require('./cloud');
+const request = require('../services/request');
 
 const USER_DIR = `${wx.env.USER_DATA_PATH}/recipe-images`;
 
@@ -47,12 +48,11 @@ function persistImage(tempPath) {
       resolve('');
       return;
     }
-    // 包内资源、真正的远程图片、已持久化过的图片直接复用。
-    // 注意：开发者工具的临时路径形如 http://tmp/...，不能当成远程图片跳过。
     const isRemote = /^https?:\/\//.test(tempPath) && tempPath.indexOf('://tmp/') === -1;
     if (
       tempPath.indexOf('/assets/') === 0 ||
       isRemote ||
+      isCloudFileId(tempPath) ||
       tempPath.indexOf(wx.env.USER_DATA_PATH) === 0
     ) {
       resolve(tempPath);
@@ -77,44 +77,42 @@ function persistImages(paths) {
   return Promise.all((paths || []).map((path) => persistImage(path)));
 }
 
-function isCloudFileId(path) {
-  return typeof path === 'string' && path.indexOf('cloud://') === 0;
-}
-
 function isRemoteFile(path) {
   return /^https?:\/\//.test(path) && path.indexOf('://tmp/') === -1;
 }
 
+/** 云存储文件 ID（基础库 2.2.3+ 可直接用于 image / previewImage） */
+function isCloudFileId(path) {
+  return typeof path === 'string' && path.indexOf('cloud://') === 0;
+}
+
 /**
  * 统一的图片准备函数：
- * - 已经是云文件 / 包内资源 / 远程图片，直接复用；
- * - 云端可用时上传到云存储，返回 fileID；
- * - 否则复制到本机用户目录，返回本地持久路径。
+ * - 已是云文件 ID / 包内资源 / 远程链接，直接复用；
+ * - 云端可用：上传到云存储，返回 fileID；
+ * - 云端不可用：复制到本机用户目录，返回本地持久路径。
  *
  * @param {string} path 图片路径
  * @param {string} dir 云存储目录前缀，如 'recipes/'、'avatars/'
  */
-function prepareImage(path, dir) {
-  return new Promise((resolve, reject) => {
-    if (!path) {
-      resolve('');
-      return;
+async function prepareImage(path, dir) {
+  if (!path) return '';
+  if (isCloudFileId(path) || path.indexOf('/assets/') === 0 || isRemoteFile(path)) {
+    return path;
+  }
+
+  if (cloud.isAvailable()) {
+    try {
+      // 走请求层：带超时与一次重试
+      return await request.uploadFile(path, dir);
+    } catch (err) {
+      console.warn('[image] 云端上传失败，改用本地保存', err);
     }
-    if (
-      isCloudFileId(path) ||
-      path.indexOf('/assets/') === 0 ||
-      isRemoteFile(path) ||
-      (path.indexOf(wx.env.USER_DATA_PATH) === 0 && !cloud.isAvailable())
-    ) {
-      resolve(path);
-      return;
-    }
-    if (cloud.isAvailable()) {
-      cloud.uploadFile(path, dir).then(resolve).catch(reject);
-      return;
-    }
-    persistImage(path).then(resolve);
-  });
+  }
+
+  // 已在用户目录里的本地文件无需重复复制
+  if (path.indexOf(wx.env.USER_DATA_PATH) === 0) return path;
+  return persistImage(path);
 }
 
 function prepareImages(paths, dir) {
@@ -125,5 +123,6 @@ module.exports = {
   persistImage,
   persistImages,
   prepareImage,
-  prepareImages
+  prepareImages,
+  isCloudFileId
 };

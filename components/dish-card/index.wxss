@@ -3,23 +3,22 @@
 }
 
 .card {
-  margin-bottom: 18rpx;
-  border-radius: 28rpx;
+  margin-bottom: 16rpx;
+  border-radius: 20rpx;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 12rpx 30rpx rgba(120, 80, 50, 0.08);
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 2rpx 8rpx rgba(74, 52, 38, 0.05);
+  transition: transform 0.16s ease;
 }
 
 .card--hover {
-  transform: scale(0.98);
-  opacity: 0.94;
+  transform: scale(0.985);
 }
 
 .media {
   position: relative;
   width: 100%;
-  background: #f3e7da;
+  background: #f3e9df;
   overflow: hidden;
 }
 
@@ -32,11 +31,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffe3cc 0%, #ffd0ad 100%);
+  background: #f7ede2;
 }
 
 .empty-emoji {
-  font-size: 76rpx;
+  font-size: 64rpx;
 }
 
 .shade {
@@ -44,44 +43,59 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 190rpx;
-  background: linear-gradient(180deg, rgba(30, 18, 10, 0) 0%, rgba(30, 18, 10, 0.62) 100%);
+  height: 170rpx;
+  background: linear-gradient(180deg, rgba(30, 20, 14, 0) 0%, rgba(30, 20, 14, 0.58) 100%);
+}
+
+.cat-tag {
+  position: absolute;
+  top: 14rpx;
+  left: 14rpx;
+  max-width: 192rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.92);
+  color: #8a4a24;
+  font-size: 19rpx;
+  font-weight: 600;
 }
 
 .badge {
   position: absolute;
-  top: 16rpx;
-  right: 16rpx;
-  padding: 2rpx 14rpx;
+  top: 14rpx;
+  right: 14rpx;
+  padding: 2rpx 12rpx;
   border-radius: 999rpx;
-  background: rgba(255, 255, 255, 0.9);
-  color: #9a5a30;
-  font-size: 20rpx;
-  font-weight: 600;
+  background: rgba(30, 20, 14, 0.42);
+  color: #ffffff;
+  font-size: 19rpx;
+  font-weight: 500;
 }
 
 .title-wrap {
   position: absolute;
-  left: 20rpx;
-  right: 20rpx;
-  bottom: 18rpx;
+  left: 18rpx;
+  right: 18rpx;
+  bottom: 16rpx;
 }
 
 .name {
-  color: #ffffff;
-  font-size: 32rpx;
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 1rpx;
-  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.4);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1.35;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.32);
 }
 
 .body {
-  padding: 16rpx 20rpx 20rpx;
+  padding: 16rpx 18rpx 18rpx;
 }
 
 .intro {
@@ -89,21 +103,21 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  font-size: 23rpx;
-  line-height: 1.5;
-  color: #8c7a6b;
+  font-size: 22rpx;
+  line-height: 1.55;
+  color: #8b7c71;
 }
 
 .meta {
   display: flex;
   align-items: center;
   margin-top: 12rpx;
-  font-size: 20rpx;
-  color: #b9a695;
+  font-size: 19rpx;
+  color: #a99a8d;
 }
 
 .author {
-  max-width: 140rpx;
+  max-width: 132rpx;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -4,7 +4,8 @@
     "pages/detail/detail",
     "pages/create/create",
     "pages/login/login",
-    "pages/mine/mine"
+    "pages/mine/mine",
+    "pages/family/family"
   ],
   "window": {
     "backgroundTextStyle": "dark",

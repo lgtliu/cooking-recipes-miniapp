@@ -1,0 +1,9 @@
+{
+  "name": "family",
+  "version": "1.0.0",
+  "description": "小杜里家人云函数：家庭组、邀请码、成员管理与订阅消息推送",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

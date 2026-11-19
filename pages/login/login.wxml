@@ -9,7 +9,7 @@
     <button
       class="avatar-btn"
       open-type="chooseAvatar"
-      hover-class="none"
+      hover-class="press-hover"
       bindchooseavatar="onChooseAvatar"
     >
       <image wx:if="{{avatar}}" class="avatar" src="{{avatar}}" mode="aspectFill" />
@@ -34,10 +34,10 @@
       />
     </view>
 
-    <button class="submit" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">
+    <button class="submit" bindtap="submit" hover-class="press-hover" loading="{{submitting}}" disabled="{{submitting}}">
       {{submitting ? '登录中…' : '进入小杜里'}}
     </button>
 
-    <text class="privacy">登录信息仅保存在本机，不会上传到服务器</text>
+    <text class="privacy">微信身份自动识别，昵称和头像会保存到云端，仅用于展示作者信息</text>
   </view>
 </view>

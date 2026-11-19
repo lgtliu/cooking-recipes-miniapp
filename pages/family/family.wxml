@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="loading" wx:if="{{user && loading}}">正在加载家人信息…</view>
+
+  <view class="state-card" wx:elif="{{!user}}">
+    <text class="state-card__emoji">👨‍👩‍👧</text>
+    <text class="state-card__title">登录后和家人一起用</text>
+    <text class="state-card__desc">创建家庭或加入家人的家庭，就能把菜谱里的食材清单分享给他们。</text>
+    <view class="primary-btn press" hover-class="press-hover" bindtap="goLogin">去登录</view>
+  </view>
+
+  <view class="state-card" wx:elif="{{!supported}}">
+    <text class="state-card__emoji">☁️</text>
+    <text class="state-card__title">家人功能需要云端</text>
+    <text class="state-card__desc">当前是本地模式（云环境不可用或 family 云函数未部署）。家庭组和订阅消息都依赖云端，恢复云端后可继续使用。</text>
+  </view>
+
+  <block wx:elif="{{!family}}">
+    <view class="state-card state-card--compact">
+      <text class="state-card__title">还没有家庭</text>
+      <text class="state-card__desc">创建一个家庭，或输入家人给你的邀请码加入。</text>
+    </view>
+
+    <view class="card">
+      <text class="card__title">创建家庭</text>
+      <text class="card__desc">创建后你就是创建者，可以邀请家人、移除成员。</text>
+      <view class="primary-btn press" hover-class="press-hover" bindtap="createFamily">{{creating ? '创建中…' : '创建我的家庭'}}</view>
+    </view>
+
+    <view class="card">
+      <text class="card__title">加入家庭</text>
+      <text class="card__desc">输入家人分享卡片里的邀请码，确认后加入。</text>
+      <view class="join-row">
+        <input
+          class="join-input"
+          value="{{inviteInput}}"
+          bindinput="onInviteInput"
+          placeholder="例如 7K3M9Q"
+          maxlength="8"
+        />
+        <view class="join-btn press" hover-class="press-hover" bindtap="joinByCode">{{joining ? '加入中…' : '加入'}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="family-card">
+      <view class="family-card__top">
+        <view class="family-card__info">
+          <text class="family-card__name">{{family.name}}</text>
+          <text class="family-card__meta">{{members.length}} 位家人 · {{isOwner ? '你是创建者' : '你是成员'}}</text>
+        </view>
+        <button class="share-btn" open-type="share" hover-class="press-hover">邀请家人</button>
+      </view>
+
+      <view class="invite-row">
+        <text class="invite-row__label">邀请码</text>
+        <text class="invite-row__code">{{family.inviteCode}}</text>
+        <view class="invite-row__copy press" hover-class="press-hover" bindtap="copyInviteCode">复制</view>
+      </view>
+
+      <text class="family-card__hint" wx:if="{{!templateConfigured}}">订阅消息模板还没配置，暂时收不到家人推送的食材清单。</text>
+    </view>
+
+    <view class="section__head">
+      <text class="section__title">家人</text>
+      <text class="section__count">{{members.length}} 位</text>
+    </view>
+
+    <view class="members">
+      <view class="member" wx:for="{{members}}" wx:key="openid">
+        <image wx:if="{{item.avatar}}" class="member__avatar" src="{{item.avatar}}" mode="aspectFill" />
+        <view wx:else class="member__avatar member__avatar--empty">{{item.initial}}</view>
+
+        <view class="member__body">
+          <view class="member__row">
+            <text class="member__name">{{item.nickname}}</text>
+            <text class="tag tag--self" wx:if="{{item.isSelf}}">我</text>
+            <text class="tag tag--owner" wx:if="{{item.role === 'owner'}}">创建者</text>
+          </view>
+          <text class="member__sub {{item.subscribed ? 'member__sub--on' : 'member__sub--off'}}">{{item.subscribed ? '已开启提醒' : '未开启提醒'}}</text>
+        </view>
+
+        <view wx:if="{{item.isSelf}}" class="member__act press" hover-class="press-hover" bindtap="enableNotify">{{item.subscribed ? '重新授权' : '开启提醒'}}</view>
+        <view
+          wx:elif="{{isOwner}}"
+          class="member__act member__act--danger press"
+          hover-class="press-hover"
+          bindtap="removeMember"
+          data-openid="{{item.openid}}"
+          data-name="{{item.nickname}}"
+        >移除</view>
+      </view>
+    </view>
+
+    <view class="notice">
+      <text class="notice__title">关于提醒</text>
+      <text class="notice__text">家人提醒用的是微信「订阅消息」，每次授权只能接收一条。收到分享后可再次点「重新授权」继续接收。</text>
+    </view>
+
+    <view class="leave-btn press" hover-class="press-hover" wx:if="{{!isOwner}}" bindtap="leaveFamily">退出家庭</view>
+    <text class="owner-note" wx:else>创建者不能退出家庭；如需解散，可先移除所有成员。</text>
+  </block>
+</view>

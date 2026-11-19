@@ -5,6 +5,7 @@
       <text class="empty-emoji">🍲</text>
     </view>
     <view class="shade"></view>
+    <view wx:if="{{dish.categoryName}}" class="cat-tag">{{dish.categoryIcon}} {{dish.categoryName}}</view>
     <view class="badge">{{dish.steps.length}} 步</view>
     <view class="title-wrap">
       <text class="name">{{dish.name}}</text>
