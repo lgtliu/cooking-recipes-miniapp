@@ -1,0 +1,110 @@
+<view class="page" wx:if="{{dish}}">
+  <view class="hero">
+    <swiper
+      wx:if="{{dish.images.length > 1}}"
+      class="hero__swiper"
+      circular
+      bindchange="onSwiperChange"
+    >
+      <swiper-item wx:for="{{dish.images}}" wx:key="*this">
+        <image
+          class="hero__img"
+          src="{{item}}"
+          mode="aspectFill"
+          data-index="{{index}}"
+          bindtap="previewHero"
+        />
+      </swiper-item>
+    </swiper>
+
+    <image
+      wx:elif="{{dish.images.length === 1}}"
+      class="hero__img"
+      src="{{dish.images[0]}}"
+      mode="aspectFill"
+      data-index="0"
+      bindtap="previewHero"
+    />
+
+    <view wx:else class="hero__img hero__img--empty">
+      <text class="hero__emoji">🍲</text>
+    </view>
+
+    <view class="hero__mask"></view>
+
+    <view wx:if="{{dish.images.length > 1}}" class="hero__counter">
+      {{current + 1}} / {{dish.images.length}}
+    </view>
+
+    <view class="hero__caption">
+      <text class="hero__kicker">{{timeText}}更新</text>
+      <text class="hero__name">{{dish.name}}</text>
+    </view>
+  </view>
+
+  <view class="sheet">
+    <view class="meta-card">
+      <view class="meta">
+        <text class="meta__value">{{dish.steps.length}}</text>
+        <text class="meta__label">个步骤</text>
+      </view>
+      <view class="meta__divider"></view>
+      <view class="meta">
+        <text class="meta__value">{{dish.images.length}}</text>
+        <text class="meta__label">张成品图</text>
+      </view>
+      <view class="meta__divider"></view>
+      <view class="meta">
+        <text class="meta__value meta__value--text">{{dish.author}}</text>
+        <text class="meta__label">创作者</text>
+      </view>
+    </view>
+
+    <text class="intro" wx:if="{{dish.intro}}">{{dish.intro}}</text>
+
+    <view class="steps-head">
+      <text class="steps-head__title">做法步骤</text>
+      <text class="steps-head__hint">跟着做，不会翻车</text>
+    </view>
+
+    <view class="steps">
+      <view class="step" wx:for="{{dish.steps}}" wx:key="no">
+        <view class="step__rail">
+          <view class="step__no">{{item.no}}</view>
+          <view class="step__line" wx:if="{{index !== dish.steps.length - 1}}"></view>
+        </view>
+        <view class="step__body">
+          <text class="step__text">{{item.text}}</text>
+          <image
+            wx:if="{{item.image}}"
+            class="step__img"
+            src="{{item.image}}"
+            mode="aspectFill"
+            data-src="{{item.image}}"
+            bindtap="previewStep"
+          />
+        </view>
+      </view>
+    </view>
+
+    <view class="footer" wx:if="{{canManage}}">
+      <text class="footer__slogan">这是你记录的菜谱</text>
+      <view class="owner-actions">
+        <view class="owner-btn" bindtap="editDish">编辑菜谱</view>
+        <view class="owner-btn owner-btn--danger" bindtap="deleteDish">删除</view>
+      </view>
+    </view>
+
+    <view class="footer" wx:else>
+      <text class="footer__slogan">每一道家常菜，都值得被记录</text>
+      <view class="footer__btn" bindtap="goCreate">记录我的版本</view>
+    </view>
+  </view>
+</view>
+
+<view class="missing" wx:else>
+  <text class="missing__emoji">🥣</text>
+  <text class="missing__title">这道菜找不到了</text>
+  <text class="missing__desc">它可能已经被删除，回首页看看别的菜吧</text>
+  <view class="missing__btn" bindtap="goHome">返回首页</view>
+</view>

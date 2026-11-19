@@ -1,0 +1,91 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero__head">
+      <view class="brand">
+        <view class="brand__mark">杜</view>
+        <view class="brand__text">
+          <text class="brand__name">小杜里</text>
+          <text class="brand__desc">把家常菜做成作品</text>
+        </view>
+      </view>
+      <view class="user-chip" bindtap="goUser">
+        <image
+          wx:if="{{user && user.avatar}}"
+          class="user-chip__avatar"
+          src="{{user.avatar}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="user-chip__avatar user-chip__avatar--empty">{{user ? '我' : '👤'}}</view>
+        <text class="user-chip__name">{{user ? user.nickname : '登录'}}</text>
+      </view>
+    </view>
+
+    <view class="mode-tip" wx:if="{{mode === 'local'}}">
+      <text class="mode-tip__dot"></text>
+      <text>本地模式 · 数据仅保存在这台设备</text>
+    </view>
+
+    <view class="hero__title">今天，想做点什么？</view>
+
+    <view class="hero__stats">
+      <view class="stat">
+        <text class="stat__num">{{total}}</text>
+        <text class="stat__label">道菜谱</text>
+      </view>
+      <view class="stat__divider"></view>
+      <view class="stat">
+        <text class="stat__num">{{totalSteps}}</text>
+        <text class="stat__label">个步骤</text>
+      </view>
+      <view class="stat__divider"></view>
+      <view class="stat">
+        <text class="stat__num">100%</text>
+        <text class="stat__label">家的味道</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section__head">
+      <text class="section__title">厨房里的作品</text>
+      <text class="section__hint">下拉刷新</text>
+    </view>
+
+    <view class="feed" wx:if="{{total > 0}}">
+      <view class="feed__col">
+        <dish-card
+          wx:for="{{leftColumn}}"
+          wx:key="id"
+          dish="{{item}}"
+          height="{{item.cardHeight}}"
+          bind:opendish="openDish"
+        />
+      </view>
+      <view class="feed__col">
+        <dish-card
+          wx:for="{{rightColumn}}"
+          wx:key="id"
+          dish="{{item}}"
+          height="{{item.cardHeight}}"
+          bind:opendish="openDish"
+        />
+      </view>
+    </view>
+
+    <view class="empty" wx:else>
+      <text class="empty__emoji">🍳</text>
+      <text class="empty__title">厨房还空着</text>
+      <text class="empty__desc">记录第一道亲手做的菜，让它留在这里</text>
+      <view class="empty__btn" bindtap="goCreate">去创建菜谱</view>
+    </view>
+
+    <view class="footer">
+      <text class=""></text>
+    </view>
+  </view>
+
+  <view class="fab" bindtap="goCreate">
+    <text class="fab__plus">＋</text>
+    <text class="fab__text">记一道菜</text>
+  </view>
+</view>

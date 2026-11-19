@@ -1,0 +1,21 @@
+<view class="card" hover-class="card--hover" hover-stay-time="80" bindtap="handleTap">
+  <view class="media" style="height: {{height}}rpx;">
+    <image wx:if="{{dish.cover}}" class="cover" src="{{dish.cover}}" mode="aspectFill" lazy-load />
+    <view wx:else class="cover cover--empty">
+      <text class="empty-emoji">🍲</text>
+    </view>
+    <view class="shade"></view>
+    <view class="badge">{{dish.steps.length}} 步</view>
+    <view class="title-wrap">
+      <text class="name">{{dish.name}}</text>
+    </view>
+  </view>
+  <view class="body">
+    <text class="intro">{{dish.intro || '还没有写简介，点进去看看做法吧。'}}</text>
+    <view class="meta">
+      <text class="author">{{dish.author || '匿名厨友'}}</text>
+      <text class="dot">·</text>
+      <text class="time">{{dish.timeText}}</text>
+    </view>
+  </view>
+</view>

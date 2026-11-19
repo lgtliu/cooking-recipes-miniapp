@@ -1,0 +1,114 @@
+:host {
+  display: block;
+}
+
+.card {
+  margin-bottom: 18rpx;
+  border-radius: 28rpx;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 12rpx 30rpx rgba(120, 80, 50, 0.08);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.card--hover {
+  transform: scale(0.98);
+  opacity: 0.94;
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  background: #f3e7da;
+  overflow: hidden;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+}
+
+.cover--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffe3cc 0%, #ffd0ad 100%);
+}
+
+.empty-emoji {
+  font-size: 76rpx;
+}
+
+.shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 190rpx;
+  background: linear-gradient(180deg, rgba(30, 18, 10, 0) 0%, rgba(30, 18, 10, 0.62) 100%);
+}
+
+.badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  padding: 2rpx 14rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.9);
+  color: #9a5a30;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+.title-wrap {
+  position: absolute;
+  left: 20rpx;
+  right: 20rpx;
+  bottom: 18rpx;
+}
+
+.name {
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 1rpx;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.4);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.body {
+  padding: 16rpx 20rpx 20rpx;
+}
+
+.intro {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 23rpx;
+  line-height: 1.5;
+  color: #8c7a6b;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  margin-top: 12rpx;
+  font-size: 20rpx;
+  color: #b9a695;
+}
+
+.author {
+  max-width: 140rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dot {
+  margin: 0 8rpx;
+}

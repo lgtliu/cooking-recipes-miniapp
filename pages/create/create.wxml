@@ -1,0 +1,115 @@
+<view class="page">
+  <view class="head">
+    <text class="head__title">{{isEdit ? '编辑这道菜' : '记录一道新菜'}}</text>
+    <text class="head__desc">{{isEdit ? '修改完成后保存，菜谱详情会同步更新' : '照片和步骤都会保存在本机，随时回来看看'}}</text>
+  </view>
+
+  <view class="card">
+    <text class="label">菜名 <text class="required">*</text></text>
+    <input
+      class="input"
+      value="{{name}}"
+      maxlength="16"
+      placeholder="例如：番茄炒蛋"
+      placeholder-class="ph"
+      bindinput="onNameInput"
+    />
+
+    <text class="label label--gap">简介</text>
+    <textarea
+      class="textarea"
+      value="{{intro}}"
+      maxlength="60"
+      placeholder="一句话说说这道菜的味道"
+      placeholder-class="ph"
+      auto-height
+      bindinput="onIntroInput"
+    />
+    <text class="counter">{{intro.length}}/60</text>
+  </view>
+
+  <view class="card">
+    <view class="card__head">
+      <text class="label">成品图 <text class="required">*</text></text>
+      <text class="card__hint">最多 9 张，第一张作封面</text>
+    </view>
+
+    <view class="photo-grid">
+      <view class="photo" wx:for="{{photos}}" wx:key="*this">
+        <image
+          class="photo__img"
+          src="{{item}}"
+          mode="aspectFill"
+          data-index="{{index}}"
+          bindtap="previewPhoto"
+        />
+        <view class="photo__del" data-index="{{index}}" catchtap="removePhoto">×</view>
+        <view wx:if="{{index === 0}}" class="photo__tag">封面</view>
+        <view wx:else class="photo__cover" data-index="{{index}}" catchtap="setCover">设为封面</view>
+      </view>
+
+      <view wx:if="{{photos.length < 9}}" class="photo photo--add" bindtap="choosePhotos">
+        <text class="photo__plus">＋</text>
+        <text class="photo__text">上传</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card__head">
+      <text class="label">做法步骤 <text class="required">*</text></text>
+      <text class="card__hint">写清火候和时间</text>
+    </view>
+
+    <view class="step" wx:for="{{steps}}" wx:key="key">
+      <view class="step__head">
+        <text class="step__badge">第 {{index + 1}} 步</text>
+        <text
+          wx:if="{{steps.length > 1}}"
+          class="step__remove"
+          data-index="{{index}}"
+          catchtap="removeStep"
+        >删除</text>
+      </view>
+
+      <textarea
+        class="step__input"
+        value="{{item.text}}"
+        maxlength="200"
+        placeholder="例如：热锅倒油，油温六成热下蛋液，凝固后快速划散"
+        placeholder-class="ph"
+        auto-height
+        data-index="{{index}}"
+        bindinput="onStepInput"
+      />
+
+      <view class="step__media">
+        <view wx:if="{{item.image}}" class="thumb">
+          <image
+            class="thumb__img"
+            src="{{item.image}}"
+            mode="aspectFill"
+            data-index="{{index}}"
+            bindtap="previewStepImage"
+          />
+          <view class="thumb__del" data-index="{{index}}" catchtap="removeStepImage">×</view>
+        </view>
+
+        <view wx:else class="thumb thumb--add" data-index="{{index}}" bindtap="chooseStepImage">
+          <text class="thumb__icon">📷</text>
+          <text class="thumb__text">步骤图</text>
+        </view>
+
+        <text class="step__tip">选填，有图更直观</text>
+      </view>
+    </view>
+
+    <view class="add-step" bindtap="addStep">＋ 添加步骤</view>
+  </view>
+
+  <view class="publish-bar">
+    <button class="publish-btn" bindtap="publish" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? (isEdit ? '保存中…' : '发布中…') : (isEdit ? '保存修改' : '发布菜谱')}}
+    </button>
+  </view>
+</view>

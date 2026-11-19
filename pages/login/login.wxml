@@ -1,0 +1,43 @@
+<view class="page">
+  <view class="hero">
+    <view class="hero__mark">杜</view>
+    <text class="hero__name">小杜里</text>
+    <text class="hero__desc">登录后，记录你的每一道家常菜</text>
+  </view>
+
+  <view class="card">
+    <button
+      class="avatar-btn"
+      open-type="chooseAvatar"
+      hover-class="none"
+      bindchooseavatar="onChooseAvatar"
+    >
+      <image wx:if="{{avatar}}" class="avatar" src="{{avatar}}" mode="aspectFill" />
+      <view wx:else class="avatar avatar--empty">
+        <text class="avatar__plus">＋</text>
+        <text class="avatar__tip">选择头像</text>
+      </view>
+      <text class="avatar__badge">微信头像</text>
+    </button>
+
+    <view class="field">
+      <text class="field__label">昵称</text>
+      <input
+        class="field__input"
+        type="nickname"
+        value="{{nickname}}"
+        maxlength="12"
+        placeholder="点击填写微信昵称"
+        placeholder-class="ph"
+        bindinput="onNicknameInput"
+        bindblur="onNicknameInput"
+      />
+    </view>
+
+    <button class="submit" bindtap="submit" loading="{{submitting}}" disabled="{{submitting}}">
+      {{submitting ? '登录中…' : '进入小杜里'}}
+    </button>
+
+    <text class="privacy">登录信息仅保存在本机，不会上传到服务器</text>
+  </view>
+</view>

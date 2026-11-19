@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "dish-card": "/components/dish-card/index"
+  },
+  "navigationBarTitleText": "小杜里",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

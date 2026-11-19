@@ -1,0 +1,70 @@
+<view class="page">
+  <view class="profile" wx:if="{{user}}">
+    <image wx:if="{{user.avatar}}" class="profile__avatar" src="{{user.avatar}}" mode="aspectFill" />
+    <view wx:else class="profile__avatar profile__avatar--empty">杜</view>
+    <view class="profile__info">
+      <view class="profile__row">
+        <text class="profile__name">{{user.nickname}}</text>
+        <text class="profile__tag">{{mode === 'cloud' ? '云端账号' : '本地模式'}}</text>
+      </view>
+      <text class="profile__desc">已记录 {{total}} 道菜 · 仅自己可编辑删除</text>
+    </view>
+  </view>
+
+  <view class="profile profile--guest" wx:else>
+    <view class="profile__avatar profile__avatar--empty">👤</view>
+    <view class="profile__info">
+      <text class="profile__name">游客</text>
+      <text class="profile__desc">登录后可以发布和管理自己的菜谱</text>
+    </view>
+    <view class="profile__action" bindtap="goLogin">去登录</view>
+  </view>
+
+  <block wx:if="{{user}}">
+    <view class="migrate" wx:if="{{migration.canMigrate}}">
+      <view class="migrate__body">
+        <text class="migrate__title">本机还有 {{migration.count}} 道菜谱</text>
+        <text class="migrate__desc">可一次性迁移到云端，归到当前微信账号</text>
+      </view>
+      <view class="migrate__btn" bindtap="migrate">{{migrating ? '迁移中…' : '迁移'}}</view>
+    </view>
+
+    <view class="section__head">
+      <text class="section__title">我的菜谱</text>
+      <text class="section__count">{{total}} 道</text>
+    </view>
+
+    <view class="list" wx:if="{{total > 0}}">
+      <view
+        class="item"
+        wx:for="{{dishes}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="openDish"
+      >
+        <image wx:if="{{item.cover}}" class="item__cover" src="{{item.cover}}" mode="aspectFill" />
+        <view wx:else class="item__cover item__cover--empty">🍲</view>
+        <view class="item__body">
+          <text class="item__name">{{item.name}}</text>
+          <text class="item__intro">{{item.intro || '还没有写简介'}}</text>
+          <text class="item__meta">{{item.steps.length}} 个步骤 · {{item.timeText}}</text>
+        </view>
+        <text class="item__arrow">›</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:else>
+      <text class="empty__emoji">🍳</text>
+      <text class="empty__title">还没有发布过菜谱</text>
+      <text class="empty__desc">把拿手菜记录下来，只有你能编辑和删除</text>
+      <view class="empty__btn" bindtap="goCreate">去记录一道菜</view>
+    </view>
+
+    <view class="logout" bindtap="logout">退出登录</view>
+  </block>
+
+  <view class="guest-tip" wx:else>
+    <text class="guest-tip__title">游客模式 · {{mode === 'cloud' ? '云端数据' : '本地模式'}}</text>
+    <text class="guest-tip__desc">你可以浏览所有菜谱；登录后才能发布、编辑和删除自己的菜谱。</text>
+  </view>
+</view>
