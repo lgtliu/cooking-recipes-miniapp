@@ -133,9 +133,6 @@
       <text wx:else class="feed-foot__text feed-foot__text--end">{{copy.noMore}}</text>
     </view>
 
-    <view class="footer">
-      <text class=""></text>
-    </view>
   </view>
 
   <view class="fab press" hover-class="press-hover" bindtap="goCreate">
